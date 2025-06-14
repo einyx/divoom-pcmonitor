@@ -12,9 +12,9 @@ Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=/usr/bin/divoom-daemon --syslog --interval=3
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
-RestartSec=10
-StartLimitInterval=60
-StartLimitBurst=3
+RestartSec=2
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 # Security settings
 NoNewPrivileges=true

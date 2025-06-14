@@ -238,15 +238,19 @@ func getDaemonHardwareData() DaemonHardwareData {
 }
 
 func getNvidiaGPUData() *struct{ Usage, Temp int } {
+	// Check if nvidia-smi is available first
+	if _, err := exec.LookPath("nvidia-smi"); err != nil {
+		return nil
+	}
+	
 	// Try to execute nvidia-smi to get GPU data with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	
-	cmd := exec.CommandContext(ctx, "/usr/bin/nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
+	cmd := exec.CommandContext(ctx, "nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
 	cmd.Env = append(os.Environ(), "HOME=/tmp")
 	output, err := cmd.Output()
 	if err != nil {
-		// nvidia-smi not available or failed
 		if ctx.Err() == context.DeadlineExceeded {
 			logger.Printf("GPU detection timeout")
 		} else {
