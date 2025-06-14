@@ -16,7 +16,7 @@ systemctl daemon-reload
 # Enable service but don't start it automatically
 systemctl enable divoom-monitor.service || true
 
-echo "DivoomPCMonitorTool installed successfully!"
+echo "divoom-pcmonitor installed successfully!"
 echo ""
 echo "To start the monitoring service:"
 echo "  sudo systemctl start divoom-monitor"

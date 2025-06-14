@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        PC monitoring tool for Divoom devices
 
 License:        MIT
-URL:            https://github.com/alessio/DivoomPCMonitorTool-Linux
+URL:            https://github.com/alessio/divoom-pcmonitor-Linux
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  golang >= 1.19
@@ -15,7 +15,7 @@ Requires(preun): systemd
 Requires(postun): systemd
 
 %description
-DivoomPCMonitorTool provides real-time PC performance monitoring
+divoom-pcmonitor provides real-time PC performance monitoring
 that displays CPU usage, temperature, memory usage, and more on
 compatible Divoom pixel display devices.
 
@@ -62,7 +62,7 @@ exit 0
 mkdir -p /var/lib/divoom
 chown divoom:divoom /var/lib/divoom
 
-echo "DivoomPCMonitorTool installed successfully!"
+echo "divoom-pcmonitor installed successfully!"
 echo ""
 echo "To start the monitoring service:"
 echo "  sudo systemctl start divoom-monitor"
@@ -89,7 +89,7 @@ fi
 %{_sysusersdir}/divoom.conf
 
 %changelog
-* Sat Jun 14 2025 DivoomPCMonitorTool Team <noreply@example.com> - 1.0.0-1
+* Sat Jun 14 2025 divoom-pcmonitor Team <noreply@example.com> - 1.0.0-1
 - Initial RPM package
 - Added systemd daemon support
 - Cross-platform monitoring support

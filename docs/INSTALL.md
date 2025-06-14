@@ -1,11 +1,11 @@
-# DivoomPCMonitorTool Installation Guide
+# divoom-pcmonitor Installation Guide
 
 ## Quick Installation
 
 ### Ubuntu/Debian (Recommended)
 ```bash
 # Download the DEB package from releases
-wget https://github.com/alessio/DivoomPCMonitorTool-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-amd64.deb
+wget https://github.com/alessio/divoom-pcmonitor-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-amd64.deb
 
 # Install the package
 sudo dpkg -i divoom-pcmonitor-1.0.0-amd64.deb
@@ -21,7 +21,7 @@ sudo systemctl status divoom-monitor
 ### RHEL/CentOS/Fedora
 ```bash
 # Download the RPM package from releases
-wget https://github.com/alessio/DivoomPCMonitorTool-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-1.x86_64.rpm
+wget https://github.com/alessio/divoom-pcmonitor-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-1.x86_64.rpm
 
 # Install the package
 sudo rpm -i divoom-pcmonitor-1.0.0-1.x86_64.rpm
@@ -34,7 +34,7 @@ sudo systemctl enable divoom-monitor  # Enable on boot
 ### Manual Installation (Any Linux)
 ```bash
 # Download binary archive
-wget https://github.com/alessio/DivoomPCMonitorTool-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-linux-amd64.tar.gz
+wget https://github.com/alessio/divoom-pcmonitor-Linux/releases/latest/download/divoom-pcmonitor-1.0.0-linux-amd64.tar.gz
 
 # Extract
 tar -xzf divoom-pcmonitor-1.0.0-linux-amd64.tar.gz
@@ -187,7 +187,7 @@ make clean
 
 ## Windows Installation
 
-Download `DivoomPCMonitorTool-Setup.exe` from releases and run the installer.
+Download `divoom-pcmonitor-Setup.exe` from releases and run the installer.
 
 The Windows version includes:
 - Interactive GUI application

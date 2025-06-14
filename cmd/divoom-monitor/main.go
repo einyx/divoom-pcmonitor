@@ -66,12 +66,12 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("DivoomPCMonitorTool version %s\n", version)
+		fmt.Printf("divoom-pcmonitor version %s\n", version)
 		return
 	}
 
 	if *showHelp {
-		fmt.Println("DivoomPCMonitorTool - PC monitoring for Divoom devices")
+		fmt.Println("divoom-pcmonitor - PC monitoring for Divoom devices")
 		fmt.Printf("Version: %s\n\n", version)
 		fmt.Println("Usage:")
 		fmt.Println("  divoom-monitor [flags]")

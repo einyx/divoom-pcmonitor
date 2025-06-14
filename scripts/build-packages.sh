@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Comprehensive build and packaging script for DivoomPCMonitorTool
+# Comprehensive build and packaging script for divoom-pcmonitor
 # Builds binaries, creates packages (DEB, RPM, Windows installer), and prepares releases
 
 set -e
@@ -16,7 +16,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Building DivoomPCMonitorTool v${VERSION} - Complete Package Build${NC}"
+echo -e "${GREEN}Building divoom-pcmonitor v${VERSION} - Complete Package Build${NC}"
 echo "==============================================================================="
 
 # Clean previous builds

@@ -1,6 +1,6 @@
 [Unit]
 Description=Divoom PC Monitor Daemon
-Documentation=https://github.com/alessio/DivoomPCMonitorTool-Linux
+Documentation=https://github.com/alessio/divoom-pcmonitor-Linux
 After=network.target
 Wants=network.target
 

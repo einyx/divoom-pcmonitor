@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cross-platform build script for DivoomPCMonitorTool
+# Cross-platform build script for divoom-pcmonitor
 # Builds for Windows, Linux, and macOS
 
 set -e
@@ -15,7 +15,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Building DivoomPCMonitorTool v${VERSION} for multiple platforms${NC}"
+echo -e "${GREEN}Building divoom-pcmonitor v${VERSION} for multiple platforms${NC}"
 echo "=================================================="
 
 # Create build directory

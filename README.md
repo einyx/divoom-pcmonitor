@@ -20,14 +20,20 @@ A lightweight Go implementation of the Divoom PC Monitor Tool for Linux systems.
 
 ## Installation
 
+### Quick Installation (Recommended)
+
+Download a pre-built package from the [releases page](https://github.com/alessio/divoom-pcmonitor-Linux/releases) or see [INSTALL.md](docs/INSTALL.md) for detailed instructions.
+
+### Build from Source
+
 1. Clone the repository and navigate to the directory:
 ```bash
-cd DivoomPCMonitorTool-Linux
+cd divoom-pcmonitor-Linux
 ```
 
-2. Download dependencies:
+2. Verify build environment:
 ```bash
-go mod download
+./scripts/verify-build.sh
 ```
 
 3. Build the application:
@@ -38,6 +44,15 @@ make build
 Or manually:
 ```bash
 go build -o bin/divoom-monitor ./cmd/divoom-monitor
+go build -o bin/divoom-daemon ./cmd/divoom-daemon
+go build -o bin/divoom-test ./cmd/divoom-test
+```
+
+### Systemd Service Setup
+
+For automatic startup and background monitoring:
+```bash
+sudo ./scripts/setup-systemd.sh
 ```
 
 ## Usage
@@ -108,9 +123,13 @@ GOOS=windows GOARCH=amd64 go build -o bin/divoom-monitor.exe ./cmd/divoom-monito
 
 ## Troubleshooting
 
-### Permission Issues
-- Run with `sudo` for full hardware access
-- Ensure your user is in the appropriate groups for sensor access
+See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues and solutions.
+
+### Quick Fixes
+
+1. **Build Issues**: Run `./scripts/verify-build.sh` to check your environment
+2. **Device Not Found**: Use `divoom-test` to verify connectivity
+3. **Service Issues**: Check logs with `sudo journalctl -u divoom-monitor -f`
 
 ### No Temperature Data
 - Install lm-sensors: `sudo apt-get install lm-sensors`

@@ -1,4 +1,4 @@
-DivoomPCMonitorTool for Windows
+divoom-pcmonitor for Windows
 ================================
 
 This package includes three utilities for monitoring your PC with Divoom devices:
@@ -29,7 +29,7 @@ Stop service:      divoom-daemon-windows.exe stop
 Remove service:    divoom-daemon-windows.exe remove
 
 For more information, visit:
-https://github.com/alessio/DivoomPCMonitorTool-Linux
+https://github.com/alessio/divoom-pcmonitor-Linux
 
 System Requirements:
 --------------------

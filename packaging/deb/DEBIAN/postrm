@@ -12,7 +12,7 @@ case "$1" in
         # Reload systemd daemon
         systemctl daemon-reload || true
         
-        echo "DivoomPCMonitorTool completely removed."
+        echo "divoom-pcmonitor completely removed."
         ;;
     remove)
         # Reload systemd daemon

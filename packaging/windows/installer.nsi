@@ -1,22 +1,22 @@
-; NSIS Installer Script for DivoomPCMonitorTool
+; NSIS Installer Script for divoom-pcmonitor
 ; Requires NSIS 3.0 or later
 
-!define APPNAME "DivoomPCMonitorTool"
-!define COMPANYNAME "DivoomPCMonitorTool Team"
+!define APPNAME "divoom-pcmonitor"
+!define COMPANYNAME "divoom-pcmonitor Team"
 !define DESCRIPTION "PC monitoring tool for Divoom devices"
 !define VERSIONMAJOR 1
 !define VERSIONMINOR 0
 !define VERSIONBUILD 0
-!define HELPURL "https://github.com/alessio/DivoomPCMonitorTool-Linux"
-!define UPDATEURL "https://github.com/alessio/DivoomPCMonitorTool-Linux/releases"
-!define ABOUTURL "https://github.com/alessio/DivoomPCMonitorTool-Linux"
+!define HELPURL "https://github.com/alessio/divoom-pcmonitor-Linux"
+!define UPDATEURL "https://github.com/alessio/divoom-pcmonitor-Linux/releases"
+!define ABOUTURL "https://github.com/alessio/divoom-pcmonitor-Linux"
 
 RequestExecutionLevel admin
 InstallDir "$PROGRAMFILES64\${APPNAME}"
 LicenseData "LICENSE"
 Name "${APPNAME}"
 Icon "icon.ico"
-outFile "DivoomPCMonitorTool-Setup.exe"
+outFile "divoom-pcmonitor-Setup.exe"
 
 !include LogicLib.nsh
 !include "MUI2.nsh"

@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm nsis zip
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build all packages
+        run: |
+          chmod +x scripts/build-packages.sh
+          ./scripts/build-packages.sh ${{ steps.get_version.outputs.VERSION }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: divoom-pcmonitor ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            ## divoom-pcmonitor ${{ steps.get_version.outputs.VERSION }}
+
+            ### Installation
+
+            #### Debian/Ubuntu
+            ```bash
+            sudo dpkg -i divoom-pcmonitor_${{ steps.get_version.outputs.VERSION }}_amd64.deb
+            ```
+
+            #### Red Hat/CentOS/Fedora
+            ```bash
+            sudo rpm -i divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-1.x86_64.rpm
+            ```
+
+            #### Windows
+            Run the installer: `divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-windows-installer.exe`
+
+            #### Binary Archives
+            Extract the appropriate archive for your platform.
+
+      - name: Upload DEB Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor_${{ steps.get_version.outputs.VERSION }}_amd64.deb
+          asset_name: divoom-pcmonitor_${{ steps.get_version.outputs.VERSION }}_amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: Upload RPM Package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-1.x86_64.rpm
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-1.x86_64.rpm
+          asset_content_type: application/x-rpm
+
+      - name: Upload Windows Installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-windows-installer.exe
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-windows-installer.exe
+          asset_content_type: application/x-msdownload
+
+      - name: Upload Linux AMD64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-linux-amd64.tar.gz
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-linux-amd64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Linux ARM64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-linux-arm64.tar.gz
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-linux-arm64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Windows AMD64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-windows-amd64.zip
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-windows-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Upload macOS AMD64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-darwin-amd64.tar.gz
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-darwin-amd64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload macOS ARM64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-darwin-arm64.tar.gz
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-darwin-arm64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload FreeBSD AMD64 Archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-freebsd-amd64.tar.gz
+          asset_name: divoom-pcmonitor-${{ steps.get_version.outputs.VERSION }}-freebsd-amd64.tar.gz
+          asset_content_type: application/gzip

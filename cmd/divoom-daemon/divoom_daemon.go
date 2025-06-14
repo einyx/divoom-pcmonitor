@@ -70,12 +70,12 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("DivoomPCMonitorTool Daemon version %s\n", version)
+		fmt.Printf("divoom-pcmonitor Daemon version %s\n", version)
 		return
 	}
 
 	if *showHelp {
-		fmt.Println("DivoomPCMonitorTool Daemon - Background PC monitoring for Divoom devices")
+		fmt.Println("divoom-pcmonitor Daemon - Background PC monitoring for Divoom devices")
 		fmt.Printf("Version: %s\n\n", version)
 		fmt.Println("Usage:")
 		fmt.Println("  divoom-daemon [flags]")
@@ -90,7 +90,7 @@ func main() {
 	// Setup logging
 	setupLogging(*useSyslog, *logFile)
 	
-	logger.Printf("Starting DivoomPCMonitorTool Daemon v%s", version)
+	logger.Printf("Starting divoom-pcmonitor Daemon v%s", version)
 	
 	// Find device
 	var device *DaemonDevice

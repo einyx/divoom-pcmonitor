@@ -1,4 +1,4 @@
-# Makefile for DivoomPCMonitorTool
+# Makefile for divoom-pcmonitor
 
 # Variables
 VERSION ?= $(shell git describe --tags --always --dirty)
@@ -32,7 +32,7 @@ build-all:
 .PHONY: build-packages
 build-packages:
 	@echo "Building all packages..."
-	./build-packages.sh $(VERSION)
+	./scripts/build-packages.sh $(VERSION)
 
 # Clean build artifacts
 .PHONY: clean
