@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -323,9 +324,35 @@ func getHardwareData() HardwareData {
 }
 
 func getNvidiaGPUData() *struct{ Usage, Temp int } {
-	// This is a simplified version. In production, you'd want to properly parse nvidia-smi output
-	// For now, returning nil to indicate no GPU data available
-	return nil
+	// Try to execute nvidia-smi to get GPU data
+	cmd := exec.Command("nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
+	output, err := cmd.Output()
+	if err != nil {
+		// nvidia-smi not available or failed
+		return nil
+	}
+
+	// Parse the output
+	outputStr := strings.TrimSpace(string(output))
+	lines := strings.Split(outputStr, "\n")
+	if len(lines) == 0 {
+		return nil
+	}
+
+	// Get first GPU data
+	parts := strings.Split(lines[0], ", ")
+	if len(parts) != 2 {
+		return nil
+	}
+
+	usage, err1 := strconv.Atoi(strings.TrimSpace(parts[0]))
+	temp, err2 := strconv.Atoi(strings.TrimSpace(parts[1]))
+	
+	if err1 != nil || err2 != nil {
+		return nil
+	}
+
+	return &struct{ Usage, Temp int }{Usage: usage, Temp: temp}
 }
 
 func sendDataToDevice(data HardwareData) error {
