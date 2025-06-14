@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,7 +11,9 @@ import (
 	"log/syslog"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -186,8 +189,8 @@ func findDaemonDevices() ([]DaemonDevice, error) {
 func getDaemonHardwareData() DaemonHardwareData {
 	data := DaemonHardwareData{}
 
-	// CPU Usage
-	cpuPercent, err := cpu.Percent(time.Second, false)
+	// CPU Usage - use 100ms interval instead of 1 second
+	cpuPercent, err := cpu.Percent(100*time.Millisecond, false)
 	if err == nil && len(cpuPercent) > 0 {
 		data.CpuUsage = int(cpuPercent[0])
 	}
@@ -222,11 +225,61 @@ func getDaemonHardwareData() DaemonHardwareData {
 		data.MemoryUsage = int(vmStat.UsedPercent)
 	}
 
-	// GPU data (placeholder - would need nvidia-smi parsing)
-	data.GpuUsage = 0
-	data.GpuTemp = 0
+	// GPU data
+	if gpuData := getNvidiaGPUData(); gpuData != nil {
+		data.GpuUsage = gpuData.Usage
+		data.GpuTemp = gpuData.Temp
+	} else {
+		data.GpuUsage = 0
+		data.GpuTemp = 0
+	}
 
 	return data
+}
+
+func getNvidiaGPUData() *struct{ Usage, Temp int } {
+	// Try to execute nvidia-smi to get GPU data with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	
+	cmd := exec.CommandContext(ctx, "/usr/bin/nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
+	cmd.Env = append(os.Environ(), "HOME=/tmp")
+	output, err := cmd.Output()
+	if err != nil {
+		// nvidia-smi not available or failed
+		if ctx.Err() == context.DeadlineExceeded {
+			logger.Printf("GPU detection timeout")
+		} else {
+			logger.Printf("GPU detection failed: %v", err)
+		}
+		return nil
+	}
+
+	// Parse the output
+	outputStr := strings.TrimSpace(string(output))
+	lines := strings.Split(outputStr, "\n")
+	if len(lines) == 0 {
+		logger.Printf("GPU: No output lines from nvidia-smi")
+		return nil
+	}
+
+	// Get first GPU data
+	parts := strings.Split(lines[0], ", ")
+	if len(parts) != 2 {
+		logger.Printf("GPU: Unexpected output format: %s", lines[0])
+		return nil
+	}
+
+	usage, err1 := strconv.Atoi(strings.TrimSpace(parts[0]))
+	temp, err2 := strconv.Atoi(strings.TrimSpace(parts[1]))
+	
+	if err1 != nil || err2 != nil {
+		logger.Printf("GPU: Parse error - usage: %v, temp: %v", err1, err2)
+		return nil
+	}
+
+	logger.Printf("GPU: Detected - Usage: %d%%, Temp: %d°C", usage, temp)
+	return &struct{ Usage, Temp int }{Usage: usage, Temp: temp}
 }
 
 func sendDaemonDataToDevice(device DaemonDevice, data DaemonHardwareData, lcdId int) error {

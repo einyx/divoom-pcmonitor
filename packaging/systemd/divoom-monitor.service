@@ -8,6 +8,7 @@ Wants=network.target
 Type=simple
 User=divoom
 Group=divoom
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=/usr/bin/divoom-daemon --syslog --interval=3
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=always
@@ -17,18 +18,27 @@ StartLimitBurst=3
 
 # Security settings
 NoNewPrivileges=true
-ProtectSystem=strict
+ProtectSystem=full
 ProtectHome=true
 PrivateTmp=true
-PrivateDevices=true
+# PrivateDevices=true # Disabled to allow GPU access
 ProtectKernelTunables=true
 ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictRealtime=true
 RestrictNamespaces=true
 LockPersonality=true
-MemoryDenyWriteExecute=true
+# MemoryDenyWriteExecute=true # Disabled to allow nvidia-smi execution
+MemoryDenyWriteExecute=false
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+# Allow access to GPU devices
+DevicePolicy=auto
+#DeviceAllow=/dev/nvidia* rw
+#DeviceAllow=/dev/nvidiactl rw
+#DeviceAllow=/dev/nvidia-modeset rw
+#DeviceAllow=/dev/nvidia-uvm rw
+#DeviceAllow=/dev/nvidia-uvm-tools rw
+SupplementaryGroups=video render
 
 # Resource limits
 LimitNOFILE=1024

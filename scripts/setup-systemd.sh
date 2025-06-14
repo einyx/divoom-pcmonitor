@@ -31,10 +31,27 @@ fi
 # Create divoom user if it doesn't exist
 if ! id -u divoom >/dev/null 2>&1; then
     echo "Creating divoom system user..."
-    useradd --system --home-dir /var/lib/divoom --shell /bin/false divoom
+    useradd --system --home-dir /var/lib/divoom --shell /bin/false --groups video,render divoom
     echo -e "${GREEN}✓ User 'divoom' created${NC}"
 else
     echo -e "${GREEN}✓ User 'divoom' already exists${NC}"
+    # Add to video and render groups if not already a member
+    GROUPS_TO_ADD=""
+    if ! groups divoom | grep -q video; then
+        GROUPS_TO_ADD="video"
+    fi
+    if ! groups divoom | grep -q render; then
+        if [ -n "$GROUPS_TO_ADD" ]; then
+            GROUPS_TO_ADD="$GROUPS_TO_ADD,render"
+        else
+            GROUPS_TO_ADD="render"
+        fi
+    fi
+    if [ -n "$GROUPS_TO_ADD" ]; then
+        echo "Adding divoom user to groups: $GROUPS_TO_ADD..."
+        usermod -a -G $GROUPS_TO_ADD divoom
+        echo -e "${GREEN}✓ User 'divoom' added to groups: $GROUPS_TO_ADD${NC}"
+    fi
 fi
 
 # Create home directory
