@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+# Create divoom user if it doesn't exist
+if ! getent passwd divoom > /dev/null 2>&1; then
+    useradd --system --home-dir /var/lib/divoom --shell /bin/false divoom
+fi
+
+# Create home directory
+mkdir -p /var/lib/divoom
+chown divoom:divoom /var/lib/divoom
+
+# Reload systemd daemon
+systemctl daemon-reload
+
+# Enable service but don't start it automatically
+systemctl enable divoom-monitor.service || true
+
+echo "DivoomPCMonitorTool installed successfully!"
+echo ""
+echo "To start the monitoring service:"
+echo "  sudo systemctl start divoom-monitor"
+echo ""
+echo "To check service status:"
+echo "  sudo systemctl status divoom-monitor"
+echo ""
+echo "To run interactive mode:"
+echo "  divoom-monitor"
+echo ""
+echo "To test device connectivity:"
+echo "  divoom-test"
+
+exit 0

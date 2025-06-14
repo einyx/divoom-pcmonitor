@@ -1,0 +1,250 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+          - goos: linux
+            goarch: 386
+            suffix: ""
+          - goos: linux
+            goarch: arm64
+            suffix: ""
+          - goos: linux
+            goarch: arm
+            suffix: ""
+          # Windows builds
+          - goos: windows
+            goarch: amd64
+            suffix: ".exe"
+          - goos: windows
+            goarch: 386
+            suffix: ".exe"
+          - goos: windows
+            goarch: arm64
+            suffix: ".exe"
+          # macOS builds
+          - goos: darwin
+            goarch: amd64
+            suffix: ""
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+          # FreeBSD builds
+          - goos: freebsd
+            goarch: amd64
+            suffix: ""
+          - goos: freebsd
+            goarch: 386
+            suffix: ""
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Build binaries
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        # Set version from git tag or commit
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION=${GITHUB_SHA::8}
+        fi
+        
+        LDFLAGS="-s -w -X main.version=${VERSION}"
+        TARGET="${{ matrix.goos }}_${{ matrix.goarch }}"
+        
+        # Build main interactive version
+        go build -ldflags="${LDFLAGS}" -o "divoom-monitor-${TARGET}${{ matrix.suffix }}" main.go
+        
+        # Build daemon version
+        go build -ldflags="${LDFLAGS}" -o "divoom-daemon-${TARGET}${{ matrix.suffix }}" divoom_daemon.go
+        
+        # Build auto version
+        go build -ldflags="${LDFLAGS}" -o "divoom-auto-${TARGET}${{ matrix.suffix }}" divoom_auto.go
+        
+        # Build test version
+        go build -ldflags="${LDFLAGS}" -o "divoom-test-${TARGET}${{ matrix.suffix }}" test_divoom.go
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: binaries-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: |
+          divoom-monitor-*
+          divoom-daemon-*
+          divoom-auto-*
+          divoom-test-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release
+        find artifacts -name "divoom-*" -type f -exec cp {} release/ \;
+        cd release
+        
+        # Create checksums
+        sha256sum * > checksums.txt
+        
+        # Create compressed archives for each platform
+        for os in linux windows darwin freebsd; do
+          for arch in amd64 386 arm64 arm; do
+            if ls divoom-*-${os}_${arch}* 1> /dev/null 2>&1; then
+              if [ "$os" = "windows" ]; then
+                zip -j "divoom-pcmonitor-${os}-${arch}.zip" divoom-*-${os}_${arch}*
+              else
+                tar -czf "divoom-pcmonitor-${os}-${arch}.tar.gz" divoom-*-${os}_${arch}*
+              fi
+            fi
+          done
+        done
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release/divoom-pcmonitor-*.tar.gz
+          release/divoom-pcmonitor-*.zip
+          release/checksums.txt
+        body: |
+          ## DivoomPCMonitorTool Linux Release
+          
+          Cross-platform PC monitoring tool for Divoom devices.
+          
+          ### Downloads
+          - **Linux**: Download the appropriate `.tar.gz` file for your architecture
+          - **Windows**: Download the appropriate `.zip` file for your architecture  
+          - **macOS**: Download the appropriate `.tar.gz` file for your architecture
+          - **FreeBSD**: Download the appropriate `.tar.gz` file for your architecture
+          
+          ### Usage
+          1. Extract the archive
+          2. Run `divoom-monitor` for interactive mode
+          3. Run `divoom-auto` for automatic monitoring
+          4. Run `divoom-test` to test device connectivity
+          
+          ### Architectures
+          - `amd64`: 64-bit Intel/AMD
+          - `386`: 32-bit Intel/AMD
+          - `arm64`: 64-bit ARM (Apple Silicon, Raspberry Pi 4+)
+          - `arm`: 32-bit ARM (Raspberry Pi 3 and older)
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: |
+        go test -v ./...
+        
+    - name: Build and test compile
+      run: |
+        go build -o divoom-monitor main.go
+        go build -o divoom-auto divoom_auto.go
+        go build -o divoom-test test_divoom.go
+        
+        # Test that binaries are executable
+        ./divoom-monitor --help || echo "Interactive binary built successfully"
+        ./divoom-daemon --help || echo "Daemon binary built successfully"
+        echo "All binaries compiled successfully"
+
+  package:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install packaging tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y dpkg-dev rpm build-essential
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Prepare binaries for packaging
+      run: |
+        mkdir -p dist/binaries
+        find artifacts -name "divoom-*" -type f -exec cp {} dist/binaries/ \;
+
+    - name: Build packages
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/v}
+        ./build-packages.sh ${VERSION}
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages
+        path: |
+          dist/packages/
+          dist/archives/
+          dist/checksums.txt

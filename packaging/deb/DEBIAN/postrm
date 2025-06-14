@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    purge)
+        # Remove divoom user and home directory
+        if getent passwd divoom > /dev/null 2>&1; then
+            userdel divoom || true
+        fi
+        rm -rf /var/lib/divoom || true
+        
+        # Reload systemd daemon
+        systemctl daemon-reload || true
+        
+        echo "DivoomPCMonitorTool completely removed."
+        ;;
+    remove)
+        # Reload systemd daemon
+        systemctl daemon-reload || true
+        ;;
+esac
+
+exit 0

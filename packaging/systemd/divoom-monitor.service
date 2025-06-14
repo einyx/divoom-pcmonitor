@@ -1,0 +1,39 @@
+[Unit]
+Description=Divoom PC Monitor Daemon
+Documentation=https://github.com/alessio/DivoomPCMonitorTool-Linux
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=divoom
+Group=divoom
+ExecStart=/usr/bin/divoom-daemon --syslog --interval=3
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+# Resource limits
+LimitNOFILE=1024
+MemoryMax=128M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

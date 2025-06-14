@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+# Stop and disable the service
+systemctl stop divoom-monitor.service || true
+systemctl disable divoom-monitor.service || true
+
+exit 0

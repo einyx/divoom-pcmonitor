@@ -1,0 +1,17 @@
+Package: divoom-pcmonitor
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6 (>= 2.17), systemd
+Maintainer: DivoomPCMonitorTool Team <noreply@example.com>
+Description: PC monitoring tool for Divoom devices
+ DivoomPCMonitorTool provides real-time PC performance monitoring
+ that displays CPU usage, temperature, memory usage, and more on
+ compatible Divoom pixel display devices.
+ .
+ This package includes:
+ - Interactive monitoring application (divoom-monitor)
+ - Automatic background daemon (divoom-daemon)
+ - Device testing utility (divoom-test)
+ - Systemd service for background monitoring
