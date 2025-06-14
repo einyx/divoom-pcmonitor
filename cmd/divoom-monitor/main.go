@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -324,11 +325,24 @@ func getHardwareData() HardwareData {
 }
 
 func getNvidiaGPUData() *struct{ Usage, Temp int } {
-	// Try to execute nvidia-smi to get GPU data
-	cmd := exec.Command("nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
+	// Check if nvidia-smi is available first
+	if _, err := exec.LookPath("nvidia-smi"); err != nil {
+		return nil
+	}
+	
+	// Try to execute nvidia-smi to get GPU data with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	
+	cmd := exec.CommandContext(ctx, "nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits")
+	cmd.Env = append(os.Environ(), "HOME=/tmp")
 	output, err := cmd.Output()
 	if err != nil {
-		// nvidia-smi not available or failed
+		if ctx.Err() == context.DeadlineExceeded {
+			fmt.Printf("GPU detection timeout\n")
+		} else {
+			fmt.Printf("GPU detection failed: %v\n", err)
+		}
 		return nil
 	}
 
@@ -336,12 +350,14 @@ func getNvidiaGPUData() *struct{ Usage, Temp int } {
 	outputStr := strings.TrimSpace(string(output))
 	lines := strings.Split(outputStr, "\n")
 	if len(lines) == 0 {
+		fmt.Printf("GPU: No output lines from nvidia-smi\n")
 		return nil
 	}
 
 	// Get first GPU data
 	parts := strings.Split(lines[0], ", ")
 	if len(parts) != 2 {
+		fmt.Printf("GPU: Unexpected output format: %s\n", lines[0])
 		return nil
 	}
 
@@ -349,9 +365,11 @@ func getNvidiaGPUData() *struct{ Usage, Temp int } {
 	temp, err2 := strconv.Atoi(strings.TrimSpace(parts[1]))
 	
 	if err1 != nil || err2 != nil {
+		fmt.Printf("GPU: Parse error - usage: %v, temp: %v\n", err1, err2)
 		return nil
 	}
 
+	fmt.Printf("GPU: Detected - Usage: %d%%, Temp: %d°C\n", usage, temp)
 	return &struct{ Usage, Temp int }{Usage: usage, Temp: temp}
 }
 
